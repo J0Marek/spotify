@@ -72,7 +72,6 @@ public class AlbumService {
         bean.setAlbumType(album.getAlbumType());
         bean.setImages(album.getImages());
         //bean.setArtists(album.getArtists());
-        //bean.setAvailableMarkets(album.getAvailableMarkets());
 
         return bean;
     }

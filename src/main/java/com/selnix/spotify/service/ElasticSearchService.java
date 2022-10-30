@@ -12,7 +12,7 @@ import java.net.http.HttpResponse;
 @Service
 public class ElasticSearchService {
 
-    public void getArtist(String name) throws URISyntaxException, IOException, InterruptedException {
+    public HttpResponse<String> getArtist(String name) throws URISyntaxException, IOException, InterruptedException {
         HttpClient client = HttpClient.newHttpClient();
 
         HttpRequest request = HttpRequest.newBuilder()
@@ -20,11 +20,10 @@ public class ElasticSearchService {
                 .GET()
                 .build();
 
-        HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
-        System.out.println(response);
+        return client.send(request, HttpResponse.BodyHandlers.ofString());
     }
 
-    public void getAlbum(String name) throws URISyntaxException, IOException, InterruptedException {
+    public HttpResponse<String> getAlbum(String name) throws URISyntaxException, IOException, InterruptedException {
         HttpClient client = HttpClient.newHttpClient();
 
         HttpRequest request = HttpRequest.newBuilder()
@@ -32,7 +31,6 @@ public class ElasticSearchService {
                 .GET()
                 .build();
 
-        HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
-        System.out.println(response);
+        return client.send(request, HttpResponse.BodyHandlers.ofString());
     }
 }

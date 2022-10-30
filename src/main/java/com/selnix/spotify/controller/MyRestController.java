@@ -6,6 +6,7 @@ import com.selnix.spotify.beans.PatchAlbumBean;
 import com.selnix.spotify.beans.PatchArtistBean;
 import com.selnix.spotify.service.AlbumService;
 import com.selnix.spotify.service.ArtistService;
+import com.selnix.spotify.service.ElasticSearchService;
 import com.selnix.spotify.service.SpotifyService;
 import lombok.RequiredArgsConstructor;
 import org.apache.oltu.oauth2.common.exception.OAuthProblemException;
@@ -13,6 +14,9 @@ import org.apache.oltu.oauth2.common.exception.OAuthSystemException;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.io.IOException;
+import java.net.URISyntaxException;
+import java.net.http.HttpResponse;
 import java.util.List;
 
 @RequiredArgsConstructor
@@ -22,6 +26,8 @@ public class MyRestController {
     private final SpotifyService spotifyService;
     private final ArtistService artistService;
     private final AlbumService albumService;
+
+    private final ElasticSearchService elasticSearchService;
 
     /// SPOTIFY API ///
     @GetMapping("/search/Albums/{artistId}")
@@ -87,5 +93,17 @@ public class MyRestController {
 
     /// ELASTICSEARCH ///
 
+    @GetMapping("/getES/Artist")
+    public ResponseEntity<HttpResponse<String>> getArtist(@RequestParam("artistName") String artistName) throws URISyntaxException, IOException, InterruptedException {
+        HttpResponse<String> response = elasticSearchService.getArtist(artistName);
+        System.out.println("The artist response = " + response);
+        return ResponseEntity.ok(response);
+    }
 
+    @GetMapping("/getES/Album")
+    public ResponseEntity<HttpResponse<String>> getAlbum(@RequestParam("albumName") String albumName) throws URISyntaxException, IOException, InterruptedException {
+        HttpResponse<String> response = elasticSearchService.getAlbum(albumName);
+        System.out.println("The album response = " + response);
+        return ResponseEntity.ok(response);
+    }
 }

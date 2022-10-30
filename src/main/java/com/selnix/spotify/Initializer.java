@@ -9,8 +9,6 @@ import org.springframework.context.event.ContextRefreshedEvent;
 import org.springframework.context.event.EventListener;
 import org.springframework.stereotype.Component;
 
-import java.io.IOException;
-import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -21,7 +19,7 @@ public class Initializer {
     private final ElasticSearchService elasticSearchService;
 
     @EventListener
-    public void onApplicationEvent(ContextRefreshedEvent event) throws OAuthProblemException, OAuthSystemException, URISyntaxException, IOException, InterruptedException {
+    public void onApplicationEvent(ContextRefreshedEvent event) throws OAuthProblemException, OAuthSystemException {
 
         List<String> artistIds = new ArrayList<>();
         artistIds.add("0qT79UgT5tY4yudH9VfsdT");
@@ -44,9 +42,5 @@ public class Initializer {
                 throw new RuntimeException(e);
             }
         });
-
-        elasticSearchService.getArtist("with confidence");
-        elasticSearchService.getAlbum("NINE");
-
     }
 }
