@@ -1,26 +1,30 @@
 package com.selnix.spotify.service;
 
-import com.selnix.spotify.beans.AlbumBean;
-import com.selnix.spotify.beans.CrudAlbumBean;
-import com.selnix.spotify.beans.FetchArtistAlbumsResponseBean;
-import com.selnix.spotify.beans.PatchAlbumBean;
+import com.selnix.spotify.beans.*;
 import com.selnix.spotify.entity.Album;
 import com.selnix.spotify.entity.Artist;
 import com.selnix.spotify.entity.Image;
+import com.selnix.spotify.exceptions.EntityDoesNotExistException;
 import com.selnix.spotify.repository.AlbumRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
+import javax.transaction.Transactional;
 import java.util.List;
-import java.util.Optional;
 
 @RequiredArgsConstructor
 @Service
+@Transactional
+
 public class AlbumService {
 
     private final AlbumRepository albumRepository;
     private final ImageService imageService;
     private final ArtistService artistService;
+
+    public void createAlbums(FetchArtistAlbumsResponseBean bean) {
+        bean.getAlbumBeans().forEach(this::createAlbum);
+    }
 
     public void createAlbum(AlbumBean bean) {
         boolean notExisting = albumRepository.findBySpotifyId(bean.getSpotifyId()).isEmpty();
@@ -40,24 +44,23 @@ public class AlbumService {
         album.setType(bean.getType());
         album.setAlbumType(bean.getAlbumType());
         album.setImages(imageService.mapBeansToImages(bean.getImages()));
+        album.setArtists(artistService.getArtistsBySpotifyIds(bean
+                .getArtists()
+                .stream()
+                .map(ArtistBean::getSpotifyId)
+                .toList()));
+
         return (album);
     }
 
-
-    public void createAlbums(FetchArtistAlbumsResponseBean bean) {
-        bean.getAlbumBeans().forEach(this::createAlbum);
-    }
-
-    public Optional<Album> getAlbumById(int albumId) {
-        return albumRepository.findById(albumId);
+    public Album getAlbumById(int albumId) {
+        return albumRepository.findById(albumId)
+                .orElseThrow(() -> new EntityDoesNotExistException("Album with id: " + albumId + "not found!"));
     }
 
     public CrudAlbumBean getCrudAlbumBeanById(int albumId) {
-        Optional<Album> searchedAlbum = getAlbumById(albumId);
-        if (searchedAlbum.isEmpty()) {
-            return null;
-        }
-        return mapAlbumToCrudAlbumBean(searchedAlbum.get());
+        Album searchedAlbum = getAlbumById(albumId);
+        return mapAlbumToCrudAlbumBean(searchedAlbum);
     }
 
     public CrudAlbumBean mapAlbumToCrudAlbumBean(Album album) {
@@ -77,18 +80,13 @@ public class AlbumService {
     }
 
     public void deleteAlbumById(int albumId) {
-        Optional<Album> searchedAlbum = getAlbumById(albumId);
-        searchedAlbum.ifPresent(album -> albumRepository.deleteById(album.getId()));
+        Album searchedAlbum = getAlbumById(albumId);
+        albumRepository.deleteById(searchedAlbum.getId());
     }
 
     public void patchAlbum(int id, PatchAlbumBean bean) { //TODO Muss erst die Bilder speichern um den Artist zu updaten
 
-        Optional<Album> searchedAlbum = getAlbumById(id);
-        if (searchedAlbum.isEmpty()) {
-            return;
-        }
-
-        Album album = searchedAlbum.get();
+        Album album = getAlbumById(id);
 
         if (bean.getName() != null) {
             album.setName(bean.getName());
@@ -121,12 +119,7 @@ public class AlbumService {
 
     public void putAlbum(int id, PatchAlbumBean bean) { //TODO Muss erst die Bilder speichern um den Artist zu updaten
 
-        Optional<Album> searchedAlbum = getAlbumById(id);
-        if (searchedAlbum.isEmpty()) {
-            return;
-        }
-
-        Album album = searchedAlbum.get();
+        Album album = getAlbumById(id);
 
         album.setName(bean.getName());
         album.setReleaseDate(bean.getReleaseDate());

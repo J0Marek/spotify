@@ -33,7 +33,7 @@ public class SpotifyService {
                 .subscribe(albumService::createAlbums);
     }
 
-    public void fetchArtist(List<String> spotifyIDs) throws OAuthProblemException, OAuthSystemException {
+    public void fetchArtists(List<String> spotifyIDs) throws OAuthProblemException, OAuthSystemException {
 
         String idString = StringUtils.join(spotifyIDs, ',');
 

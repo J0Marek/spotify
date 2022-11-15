@@ -1,6 +1,5 @@
 package com.selnix.spotify;
 
-import com.selnix.spotify.service.ElasticSearchService;
 import com.selnix.spotify.service.SpotifyService;
 import lombok.RequiredArgsConstructor;
 import org.apache.oltu.oauth2.common.exception.OAuthProblemException;
@@ -16,7 +15,6 @@ import java.util.List;
 @Component
 public class Initializer {
     private final SpotifyService spotifyService;
-    private final ElasticSearchService elasticSearchService;
 
     @EventListener
     public void onApplicationEvent(ContextRefreshedEvent event) throws OAuthProblemException, OAuthSystemException {
@@ -33,7 +31,7 @@ public class Initializer {
         artistIds.add("263rHosE7Ihtqs2Da780ZZ");
         artistIds.add("2PWXHVDEtObSmUrNhfPRav");
 
-        spotifyService.fetchArtist(artistIds);
+        spotifyService.fetchArtists(artistIds);
 
         artistIds.forEach(spotifyId -> {
             try {

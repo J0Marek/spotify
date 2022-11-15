@@ -6,19 +6,24 @@ import com.selnix.spotify.beans.FetchArtistResponseBean;
 import com.selnix.spotify.beans.PatchArtistBean;
 import com.selnix.spotify.entity.Artist;
 import com.selnix.spotify.entity.Image;
+import com.selnix.spotify.exceptions.EntityDoesNotExistException;
 import com.selnix.spotify.repository.ArtistRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
-import java.util.Optional;
 
 @RequiredArgsConstructor
 @Service
+
 public class ArtistService {
 
     private final ArtistRepository artistRepository;
     private final ImageService imageService;
+
+    public void createArtists(FetchArtistResponseBean bean) {
+        bean.getArtistBeans().forEach(this::createArtist);
+    }
 
     public void createArtist(ArtistBean bean) {
         boolean notExisting = artistRepository.findBySpotifyId(bean.getSpotifyId()).isEmpty();
@@ -28,9 +33,6 @@ public class ArtistService {
         }
     }
 
-    public void createArtists(FetchArtistResponseBean bean) {
-        bean.getArtistBeans().forEach(this::createArtist);
-    }
 
     public Artist mapBeanToArtist(ArtistBean bean) {
         Artist artist = new Artist();
@@ -46,12 +48,9 @@ public class ArtistService {
         return artist;
     }
 
-    public Optional<Artist> getArtistById(int id) {
-        return artistRepository.findById(id);
-    }
-
-    public Optional<Artist> getArtistBySpotifyId(String id) {
-        return artistRepository.findBySpotifyId(id);
+    public Artist getArtistById(int id) {
+        return artistRepository.findById(id)
+                .orElseThrow(() -> new EntityDoesNotExistException("Artist with id: " + id + "not found!"));
     }
 
     public List<Artist> createArtistsFromPatchArtistBeans(List<PatchArtistBean> beans) {
@@ -78,11 +77,8 @@ public class ArtistService {
     }
 
     public CrudArtistBean getCrudArtistBeanById(int artistId) {
-        Optional<Artist> searchedArtist = getArtistById(artistId);
-        if (searchedArtist.isEmpty()) {
-            return null;
-        }
-        return mapArtistToCrudArtistBean(searchedArtist.get());
+        Artist searchedArtist = getArtistById(artistId);
+        return mapArtistToCrudArtistBean(searchedArtist);
     }
 
     public CrudArtistBean mapArtistToCrudArtistBean(Artist artist) {
@@ -100,18 +96,13 @@ public class ArtistService {
     }
 
     public void deleteArtistById(int artistId) {
-        Optional<Artist> searchedArtist = getArtistById(artistId);
-        searchedArtist.ifPresent(artist -> artistRepository.deleteById(artist.getId()));
+        Artist artist = getArtistById(artistId);
+        artistRepository.deleteById(artist.getId());
     }
 
     public void patchArtist(int id, PatchArtistBean bean) { //TODO Muss erst die Bilder speichern um den Artist zu updaten
 
-        Optional<Artist> searchedArtist = getArtistById(id);
-        if (searchedArtist.isEmpty()) {
-            return;
-        }
-
-        Artist artist = searchedArtist.get();
+        Artist artist = getArtistById(id);
 
         if (bean.getName() != null) {
             artist.setName(bean.getName());
@@ -139,12 +130,7 @@ public class ArtistService {
 
     public void putArtist(int id, PatchArtistBean bean) { //TODO Muss erst die Bilder speichern um den Artist zu updaten
 
-        Optional<Artist> searchedArtist = getArtistById(id);
-        if (searchedArtist.isEmpty()) {
-            return;
-        }
-
-        Artist artist = searchedArtist.get();
+        Artist artist = getArtistById(id);
 
         artist.setName(bean.getName());
         List<Image> images = imageService.createImagesFromPatchImageBeans(bean.getImages());
@@ -155,5 +141,9 @@ public class ArtistService {
         artist.setType(bean.getType());
 
         artistRepository.save(artist);
+    }
+
+    public List<Artist> getArtistsBySpotifyIds(List<String> spotifyIds) {
+        return artistRepository.findAllBySpotifyIdIn(spotifyIds);
     }
 }
