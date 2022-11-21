@@ -13,13 +13,16 @@ import java.util.List;
 
 @RequiredArgsConstructor
 @Component
+
 public class Initializer {
     private final SpotifyService spotifyService;
+
 
     @EventListener
     public void onApplicationEvent(ContextRefreshedEvent event) throws OAuthProblemException, OAuthSystemException {
 
         List<String> artistIds = new ArrayList<>();
+
         artistIds.add("0qT79UgT5tY4yudH9VfsdT");
         artistIds.add("6XyY86QOPPrYVGvF9ch6wz");
         artistIds.add("5aYyPjAsLj7UzANzdupwnS");

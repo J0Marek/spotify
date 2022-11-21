@@ -26,7 +26,7 @@ public class Album {
     private String albumType;
     @OneToMany(cascade = CascadeType.ALL)
     private List<Image> images;
-    @OneToMany(cascade = CascadeType.ALL)
+    @OneToMany(cascade = CascadeType.ALL, fetch = FetchType.EAGER)
     private List<Artist> artists;
 
 }

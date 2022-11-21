@@ -9,13 +9,10 @@ import com.selnix.spotify.repository.AlbumRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
-import javax.transaction.Transactional;
 import java.util.List;
 
 @RequiredArgsConstructor
 @Service
-@Transactional
-
 public class AlbumService {
 
     private final AlbumRepository albumRepository;
@@ -23,10 +20,11 @@ public class AlbumService {
     private final ArtistService artistService;
 
     public void createAlbums(FetchArtistAlbumsResponseBean bean) {
-        bean.getAlbumBeans().forEach(this::createAlbum);
+        bean.getAlbumBeans().stream().distinct().forEach(this::createAlbum);
     }
 
     public void createAlbum(AlbumBean bean) {
+
         boolean notExisting = albumRepository.findBySpotifyId(bean.getSpotifyId()).isEmpty();
         if (notExisting) {
             Album album = mapBeanToAlbum(bean);
@@ -35,6 +33,7 @@ public class AlbumService {
     }
 
     public Album mapBeanToAlbum(AlbumBean bean) {
+
         Album album = new Album();
         album.setSpotifyId(bean.getSpotifyId());
         album.setName(bean.getName());
@@ -44,12 +43,12 @@ public class AlbumService {
         album.setType(bean.getType());
         album.setAlbumType(bean.getAlbumType());
         album.setImages(imageService.mapBeansToImages(bean.getImages()));
-        album.setArtists(artistService.getArtistsBySpotifyIds(bean
+        List<Artist> artists = artistService.getArtistsBySpotifyIds(bean
                 .getArtists()
                 .stream()
                 .map(ArtistBean::getSpotifyId)
-                .toList()));
-
+                .toList());
+        album.setArtists(artists);
         return (album);
     }
 
@@ -74,7 +73,7 @@ public class AlbumService {
         bean.setType(album.getType());
         bean.setAlbumType(album.getAlbumType());
         bean.setImages(album.getImages());
-        //bean.setArtists(album.getArtists());
+        bean.setArtists(album.getArtists());
 
         return bean;
     }
@@ -127,10 +126,8 @@ public class AlbumService {
         album.setTotalTracks(bean.getTotalTracks());
         album.setType(bean.getType());
         album.setAlbumType(bean.getAlbumType());
-        List<Image> images = imageService.createImagesFromPatchImageBeans(bean.getImages());
-        album.setImages(images);
-        List<Artist> artists = artistService.createArtistsFromPatchArtistBeans(bean.getArtists());
-        album.setArtists(artists);
+        album.setImages(imageService.createImagesFromPatchImageBeans(bean.getImages()));
+        album.setArtists(artistService.createArtistsFromPatchArtistBeans(bean.getArtists()));
         albumRepository.save(album);
     }
 }

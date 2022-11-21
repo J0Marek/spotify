@@ -21,8 +21,10 @@ public class ArtistService {
     private final ArtistRepository artistRepository;
     private final ImageService imageService;
 
+
     public void createArtists(FetchArtistResponseBean bean) {
         bean.getArtistBeans().forEach(this::createArtist);
+
     }
 
     public void createArtist(ArtistBean bean) {
@@ -120,12 +122,9 @@ public class ArtistService {
             artist.setGenres(bean.getGenres());
         }
         if (bean.getImages() != null) {
-            List<Image> images = imageService.createImagesFromPatchImageBeans(bean.getImages());
-            artist.setImages(images);
+            artist.setImages(imageService.createImagesFromPatchImageBeans(bean.getImages()));
         }
-
         artistRepository.save(artist);
-
     }
 
     public void putArtist(int id, PatchArtistBean bean) { //TODO Muss erst die Bilder speichern um den Artist zu updaten
